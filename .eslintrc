@@ -25,7 +25,7 @@
     "react/jsx-props-no-spreading": ["off"],
     "curly": "error",
     "jsx-a11y/label-has-associated-control": "off",
-    "react/jsx-filename-extension": "off",
+    "react/jsx-filename-extension": "off"
   },
   "settings": {
     "react": {

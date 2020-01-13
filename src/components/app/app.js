@@ -1,6 +1,6 @@
 import React from 'react';
 import './app.scss';
-import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Switch, Redirect } from 'react-router-dom';
 import { connect } from 'react-redux';
 import { PropTypes } from 'prop-types';
 import Header from '../header';
@@ -18,6 +18,7 @@ const mapStateToProps = ({ user, articles, articlesUiState }) => {
     pageSize: articlesUiState.pageSize,
     currentPage: articlesUiState.currentPage,
     username: user.userData.username,
+    isAuthorized: user.isAuthorized,
   };
 };
 
@@ -32,14 +33,16 @@ class App extends React.Component {
   }
 
   render() {
-    const { articles } = this.props;
+    const { articles, isAuthorized } = this.props;
+    const render = () =>
+      !isAuthorized ? <Redirect to="/login" /> : <HomePage articles={articles} />;
     return (
       <div className="container">
         <Router>
           <Header />
           <Switch>
             <Route exact path="/">
-              <HomePage articles={articles} />
+              {render()}
             </Route>
             <Route path="/signup">
               <RegestrationPage />
@@ -81,9 +84,11 @@ App.defaultProps = {
   username: '',
   articles: {},
   handleGetAllArticles: () => {},
+  isAuthorized: null,
 };
 
 App.propTypes = {
+  isAuthorized: PropTypes.bool,
   pageSize: PropTypes.number,
   currentPage: PropTypes.number,
   username: PropTypes.string,

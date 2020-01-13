@@ -60,7 +60,7 @@ class PostDetails extends React.Component {
     }
   }
 
-  handleFavoriteArticle = async (event, slug) => {
+  handleFavoriteArticle = (event, slug) => {
     const { token, handleLike } = this.props;
 
     if (!token) {
@@ -72,13 +72,13 @@ class PostDetails extends React.Component {
     const { target } = event;
     const toggle = target.classList.contains('my-btn__heart--active');
 
-    await handleLike(slug, token, toggle);
+    handleLike(slug, token, toggle);
   };
 
-  handleSettingCLick = (event, id) => {
+  handleSettingCLick = event => {
     event.preventDefault();
     const { history } = this.props;
-    history.push(`${id}/edit`);
+    history.push(`edit`);
   };
 
   updatePost() {

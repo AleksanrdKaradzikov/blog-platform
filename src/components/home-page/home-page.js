@@ -34,7 +34,7 @@ class HomePage extends React.Component {
 
   handlePostSelected = postId => {
     const { history } = this.props;
-    history.push(`/articles/${postId}`);
+    history.push(`/articles/${postId}/`);
   };
 
   renderTopBar() {

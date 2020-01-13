@@ -60,8 +60,7 @@ const articles = handleActions({
               };
     }, state);
   },
-  [actions.favoriteArticlesAdd](state, { payload: { favoritsArticles } }) {
-    //const { articles } = favoritsArticles;
+  [actions.favoriteArticlesAdd](state, { payload: { favoritedArticlesKeys } }) {
     return {
       ...state,
     };
@@ -92,32 +91,13 @@ const articles = handleActions({
       allSlugs: newAllSlugs,
     };
   },
-  [actions.favoriteArticle](state, { payload: { article } }) {
-    const { favorited, favoritesCount } = article;
-
+  [actions.likeOrDisLikeArticle](state, { payload: { article } }) {
     return {
       ...state,
       bySlug:{
         ...state.bySlug,
         [article.slug]: {
           ...article,
-          favorited: favorited,
-          favoritesCount: favoritesCount,
-        },
-      },
-    };
-  },
-  [actions.unfavoriteArticle](state, { payload: { article } }) {
-    const { favorited, favoritesCount } = article;
-
-    return {
-      ...state,
-      bySlug:{
-        ...state.bySlug,
-        [article.slug]: {
-          ...article,
-          favorited: favorited,
-          favoritesCount: favoritesCount,
         },
       },
     };

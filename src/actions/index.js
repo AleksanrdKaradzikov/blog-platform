@@ -9,8 +9,9 @@ import { createAction } from 'redux-actions';
   export const favoriteArticlesAdd = createAction('FAVORITE_ARTICLE_ADD');
   export const articleAddErr = createAction('ARTICLE_ADD_ERROR');
   export const getAllArticles = createAction('GET_ALL_ARTICLES');
-  export const favoriteArticle = createAction('FAVORITE_ARTICLE'); 
-  export const unfavoriteArticle = createAction('UNFAVORITE_ARTICLE'); 
+  // export const favoriteArticle = createAction('FAVORITE_ARTICLE'); 
+  // export const unfavoriteArticle = createAction('UNFAVORITE_ARTICLE'); 
+  export const likeOrDisLikeArticle = createAction('FAVORITE_UNFAVORITE_ARTICLE');
   export const pageChange = createAction("PAGE_CHANGE");
   export const articleEdit = createAction('ARTICLE_EDIT');
   export const articleEditErr = createAction('ARTCILE_EDIT_ERR');
@@ -114,9 +115,11 @@ export const handleGetAllArticles = (pageSize, currentPage, username) => async (
     const article = await response.json();
     dispatch(getAllArticles({ article }));
     if (username !== '') {
-      const response = await fetch(`https://conduit.productionready.io/api/articles?&favorited=${username}&limit=100&offset=${offset}`);
-      const favoritsArticles = await response.json();
-      dispatch(favoriteArticlesAdd({ favoritsArticles }));
+      const response = await fetch(`https://conduit.productionready.io/api/articles?&favorited=${username}&limit=500`);
+      const { articles } = await response.json();
+      const favoritedArticlesKeys = articles.map((post) => post.slug);
+      console.log(favoritedArticlesKeys);
+      dispatch(favoriteArticlesAdd({ favoritedArticlesKeys }));
     }
     return;
   }
@@ -129,9 +132,10 @@ export const handleLike = (slug, token, toggleLike) => async (dispatch) => {
      return;
    }
 
-   if (!toggleLike) {
+   const method = toggleLike === false ?  'POST' : 'DELETE';
+
      const response = await fetch(`https://conduit.productionready.io/api/articles/${slug}/favorite`, {
-       method: 'POST',
+       method: method,
        headers: {
         'Authorization': `Token ${token}`,
        }
@@ -139,24 +143,7 @@ export const handleLike = (slug, token, toggleLike) => async (dispatch) => {
 
      if (response.ok) {
       const { article } = await response.json();
-      dispatch(favoriteArticle({ article }));
-      console.log(article, 'like');      
+      dispatch(likeOrDisLikeArticle({ article }));
       return;
      }
-    
-   } else {
-     const response = await fetch(`https://conduit.productionready.io/api/articles/${slug}/favorite`, {
-       method: 'DELETE',
-       headers: {
-        'Authorization': `Token ${token}`,
-       },
-     });
-
-     if (response.ok) {
-        const { article } = await response.json();
-        dispatch(unfavoriteArticle({ article }));
-        console.log(article, 'unfavorite like');
-        return;
-     }
-   }
 }
