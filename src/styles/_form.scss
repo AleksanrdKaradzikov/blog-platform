@@ -1,0 +1,50 @@
+.form {
+  width: 95%;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  @media (min-width: 601px) {
+    width: 500px;
+    margin: 0 auto;
+  }
+  &__input {
+    display: block;
+    width: 100%;
+    outline: none;
+    height: 65px;
+    border: 1px solid #cdd0d1;
+    border-radius: 9px;
+    background-color: transparent;
+    margin-bottom: 20px;
+    font-weight: 200;
+    font-size: 1rem;
+    padding: 0 10px;
+    transition: border-color 0.3s;
+    &:focus {
+      border-color:#989b9c;
+    }
+    @media (min-width:601px) {
+      width: 460px;
+      padding: 0 20px;
+    }
+  }
+  &__textarea {
+    display: block;
+    width: 100%;
+    outline: none;
+    min-height: 150px;
+    border: 1px solid #cdd0d1;
+    border-radius: 9px;
+    background-color: transparent;
+    margin-bottom: 20px;
+    font-weight: 200;
+    font-size: 1rem;
+    padding: 20px 10px;
+    @media (min-width:601px) {
+      width: 460px;
+      padding: 10px 20px;
+    }
+  }
+}

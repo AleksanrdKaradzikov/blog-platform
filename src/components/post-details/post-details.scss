@@ -1,0 +1,72 @@
+.posts-block {
+  margin-top: 50px;
+}
+
+.card-footer-flex {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.heart {
+  height: 15px;
+  width: 15px;
+}
+
+.tag {
+  display: inline-block;
+  margin: 5px;
+  padding: 3px 7px;
+  color: #ffffff;
+  border: 2px dashed #333;
+  background-color: #5869FF;
+  border-radius: 5px;
+}
+
+.my-btn__heart {
+  background-image: url(./heart.png);
+  background-position: center center;
+  background-repeat: no-repeat;
+  transition: background-color 0.5s ease-in-out;
+  color: transparent;
+  &:hover {
+    background-color: #4895FF;
+  }
+  &--active {
+    transition: background-color 0.5s ease-in-out;
+    background-image: url(./coracao.png);
+    &:hover {
+      background-color: #4895FF;
+    }
+  }
+}
+
+.favorites-block {
+  display: flex;
+  align-items: center;
+  &__count {
+    font-weight: bold;
+  }
+  &__setting-link {
+    display: inline-block;
+    margin-left: 10px;
+    width: 30px;
+    height: 30px;
+    border:1px solid #000;
+    background-color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition:  background-color 0.5s ease-in-out;
+    &:hover {
+      background-color: #4895FF;
+    }
+  }
+  &__setting-image {
+    transition: transform 0.5s ease-in-out;
+    &:hover {
+      transition: transform 0.5s ease-in-out;
+      transform: rotateX(180deg);
+    }
+  }
+}

@@ -1,0 +1,40 @@
+.posts-block {
+  margin-top: 50px;
+}
+
+.card-footer-flex {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.heart {
+  height: 15px;
+  width: 15px;
+}
+
+.tag {
+  display: inline-block;
+  margin: 5px;
+  padding: 3px 7px;
+  color: #ffffff;
+  border: 2px dashed #333;
+  background-color: #5869FF;
+  border-radius: 5px;
+}
+
+.my-btn__heart {
+    background-image: url(./heart.png);
+    background-position: center center;
+    background-repeat: no-repeat;
+    color: transparent;
+    &--active {
+      background-image: url(./coracao.png);
+    }
+}
+
+.pagination-box {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
