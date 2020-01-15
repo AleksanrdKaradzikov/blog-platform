@@ -12,30 +12,44 @@ import PostDetails from '../post-details';
 import EditingPage from '../editing-page';
 import * as actions from '../../actions';
 
-const mapStateToProps = ({ user, articles, articlesUiState }) => {
+const mapStateToProps = ({ user, articlesUiState }) => {
   return {
-    articles,
     pageSize: articlesUiState.pageSize,
     currentPage: articlesUiState.currentPage,
-    username: user.userData.username,
+    token: user.userData.token,
     isAuthorized: user.isAuthorized,
   };
 };
 
 const actionCreators = {
   handleGetAllArticles: actions.handleGetAllArticles,
+  login: actions.login,
 };
 
 class App extends React.Component {
   componentDidMount() {
-    const { pageSize, currentPage, username, handleGetAllArticles } = this.props;
-    handleGetAllArticles(pageSize, currentPage, username);
+    this.checkLogin();
   }
 
+  checkLogin = async () => {
+    const { pageSize, currentPage, token, handleGetAllArticles, login } = this.props;
+    const checkStorage = localStorage.getItem('user')
+      ? JSON.parse(localStorage.getItem('user'))
+      : null;
+    if (checkStorage) {
+      const userData = {
+        user: {
+          ...checkStorage,
+        },
+      };
+      await login(userData);
+    }
+    handleGetAllArticles(pageSize, currentPage, token);
+  };
+
   render() {
-    const { articles, isAuthorized } = this.props;
-    const render = () =>
-      !isAuthorized ? <Redirect to="/login" /> : <HomePage articles={articles} />;
+    const { isAuthorized } = this.props;
+    const render = () => (!isAuthorized ? <Redirect to="/login" /> : <HomePage />);
     return (
       <div className="container">
         <Router>
@@ -69,6 +83,7 @@ class App extends React.Component {
                 return <EditingPage postId={slug} />;
               }}
             />
+            <Redirect to="/" />
           </Switch>
         </Router>
       </div>
@@ -81,20 +96,17 @@ export default connect(mapStateToProps, actionCreators)(App);
 App.defaultProps = {
   pageSize: 10,
   currentPage: 1,
-  username: '',
-  articles: {},
+  token: '',
   handleGetAllArticles: () => {},
   isAuthorized: null,
+  login: () => {},
 };
 
 App.propTypes = {
   isAuthorized: PropTypes.bool,
   pageSize: PropTypes.number,
   currentPage: PropTypes.number,
-  username: PropTypes.string,
-  articles: PropTypes.PropTypes.exact({
-    bySlug: PropTypes.object,
-    allSlugs: PropTypes.array,
-  }),
+  token: PropTypes.string,
   handleGetAllArticles: PropTypes.func,
+  login: PropTypes.func,
 };

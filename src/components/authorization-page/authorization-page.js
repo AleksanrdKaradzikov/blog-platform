@@ -47,13 +47,13 @@ class AuthorizationPage extends React.Component {
 
   handleLoginSbm = ({ password, email }, resetForm) => {
     const { login } = this.props;
-    const data = JSON.stringify({
+    const data = {
       user: {
         email,
         password,
       },
-    });
-    login(data, resetForm);
+    };
+    login(data).then(() => resetForm());
   };
 
   render() {

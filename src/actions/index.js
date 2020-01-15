@@ -6,22 +6,31 @@ import { createAction } from 'redux-actions';
   export const userLoginErr = createAction('USER_LOGIN_ERROR');
   export const userExit = createAction('USER_LOGIN_EXIT');
   export const articleAdd = createAction('ARCTICLE_ADD');
-  export const favoriteArticlesAdd = createAction('FAVORITE_ARTICLE_ADD');
   export const articleAddErr = createAction('ARTICLE_ADD_ERROR');
   export const getAllArticles = createAction('GET_ALL_ARTICLES');
-  // export const favoriteArticle = createAction('FAVORITE_ARTICLE'); 
-  // export const unfavoriteArticle = createAction('UNFAVORITE_ARTICLE'); 
   export const likeOrDisLikeArticle = createAction('FAVORITE_UNFAVORITE_ARTICLE');
   export const pageChange = createAction("PAGE_CHANGE");
   export const articleEdit = createAction('ARTICLE_EDIT');
   export const articleEditErr = createAction('ARTCILE_EDIT_ERR');
 
+ const API_BASE = 'https://conduit.productionready.io/api';
+ const getHeaders = (token = null) => {
+
+  if (!token) {
+    return {
+      'Content-Type': 'application/json;charset=utf-8',
+    };
+  }
+
+   return {
+    'Content-Type': 'application/json;charset=utf-8',
+    'Authorization': `Token ${token}`,
+   };
+ }
   export const registration = (data, resetForm) => async dispatch => {
-    const response = await fetch(`https://conduit.productionready.io/api/users/`, {
+    const response = await fetch(`${API_BASE}/users/`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: getHeaders(),
       body: data,
     });
 
@@ -37,93 +46,84 @@ import { createAction } from 'redux-actions';
   return dispatch(userRegErr({ error }));
 };
 
-export const login = (data, resetForm) => async dispatch => {
-  const response = await fetch(`https://conduit.productionready.io/api/users/login`, {
+export const login = (data) => async dispatch => {
+
+  const { user: localUser } = data; 
+
+  const response = await fetch(`${API_BASE}/users/login`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json;charset=utf-8',
-    },
-    body: data,
+    headers: getHeaders(),
+    body: JSON.stringify(data),
   });
 
   if (response.ok) {
-    const { user }  = await response.json().then(userData => {
+      const { user }  = await response.json().then(userData => {
       return userData;
     });
-    resetForm();
     dispatch(userLogin({ userData: { ...user } }));
-    return;
+    localStorage.setItem('user', JSON.stringify(localUser));
+    return true;
   }
 
   return dispatch(userLoginErr());
 };
 
 export const exit = () => {
+  localStorage.clear();
   return userExit();
 };
 
 
 export const handleArticleAdd = (data, token, resetForm) => async (dispatch) => {
-  const response = await fetch(`https://conduit.productionready.io/api/articles`, {
+  const response = await fetch(`${API_BASE}/articles`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json;charset=utf-8',
-      'Authorization': `Token ${token}`,
-    },
-    body: data,
+    headers: getHeaders(token),
+    body: JSON.stringify(data),
   });
 
   if (response.ok) {
     const { article } = await response.json();
     dispatch(articleAdd({ article }));
     resetForm();
+    return article.slug;
   } else {
     resetForm();
     dispatch(articleAddErr());
   }
 }
 
-export const handleArticleEdit = (data, token, resetForm, slug) => async (dispatch) => {
-    console.log(data);
-    const response = await fetch(`https://conduit.productionready.io/api/articles/${slug}`, {
+export const handleArticleEdit = (data, token, slug) => async (dispatch) => {
+    const response = await fetch(`${API_BASE}/articles/${slug}`, {
       method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json;charset=utf-8',
-        'Authorization': `Token ${token}`,
-      },
-      body: data,
+      headers: getHeaders(token),
+      body: JSON.stringify(data),
     });
 
     if (response.ok) {
       const { article } = await response.json();
       dispatch(articleEdit({ article, slug }));
-      resetForm();
+      return Promise.resolve(true);
     } else {
-      return dispatch(articleEditErr());
+      dispatch(articleEditErr());
+      return  Promise.reject(false);
     }
 }
 
-export const handleGetAllArticles = (pageSize, currentPage, username) => async (dispatch) => {
+export const handleGetAllArticles = (pageSize, currentPage, token = null) => async (dispatch) => {
 
   const pageIndex = currentPage === 1 ? 0 : currentPage - 1;
   const offset = pageIndex === 0 ? 0 : (pageIndex * 10);
-  const url = `https://conduit.productionready.io/api/articles?limit=${pageSize}&offset=${offset}`;
+  const url = `${API_BASE}/articles?limit=${pageSize}&offset=${offset}`;
 
-  const response = await fetch(url);
+  const response = await fetch(url, {
+    method: 'GET',
+    headers: getHeaders(token),
+  });
 
   if (response.ok) {
     const article = await response.json();
     dispatch(getAllArticles({ article }));
-    if (username !== '') {
-      const response = await fetch(`https://conduit.productionready.io/api/articles?&favorited=${username}&limit=500`);
-      const { articles } = await response.json();
-      const favoritedArticlesKeys = articles.map((post) => post.slug);
-      console.log(favoritedArticlesKeys);
-      dispatch(favoriteArticlesAdd({ favoritedArticlesKeys }));
-    }
-    return;
   }
-
 }
 
 export const handleLike = (slug, token, toggleLike) => async (dispatch) => {
@@ -134,11 +134,9 @@ export const handleLike = (slug, token, toggleLike) => async (dispatch) => {
 
    const method = toggleLike === false ?  'POST' : 'DELETE';
 
-     const response = await fetch(`https://conduit.productionready.io/api/articles/${slug}/favorite`, {
+     const response = await fetch(`${API_BASE}/articles/${slug}/favorite`, {
        method: method,
-       headers: {
-        'Authorization': `Token ${token}`,
-       }
+       headers: getHeaders(token),
      });
 
      if (response.ok) {

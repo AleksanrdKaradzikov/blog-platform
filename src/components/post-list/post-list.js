@@ -2,7 +2,9 @@ import React from 'react';
 import formatDistance from 'date-fns/formatDistance';
 import Pagination from 'react-js-pagination';
 import { ru } from 'date-fns/locale';
+import { connect } from 'react-redux';
 import { PropTypes } from 'prop-types';
+import * as actions from '../../actions';
 import Spinner from '../spinner';
 import './post-list.scss';
 
@@ -25,13 +27,29 @@ const renderTagList = tagList => {
   });
 };
 
+const mapStateToProps = ({ user, articles, articlesUiState }) => {
+  return {
+    articles,
+    token: user.userData.token,
+    pageSize: articlesUiState.pageSize,
+    currentPage: articlesUiState.currentPage,
+    totalPostCount: articlesUiState.totalPostCount,
+  };
+};
+
+const actionCreators = {
+  handleLike: actions.handleLike,
+  pageChange: actions.pageChange,
+  handleGetAllArticles: actions.handleGetAllArticles,
+};
+
 class PostList extends React.Component {
   constructor(props) {
     super(props);
     this.state = {};
   }
 
-  handleFavoriteArticle = async (event, slug) => {
+  handleFavoriteArticle = (event, slug) => {
     const { token, handleLike } = this.props;
 
     if (!token) {
@@ -43,13 +61,13 @@ class PostList extends React.Component {
     const { target } = event;
     const toggle = target.classList.contains('my-btn__heart--active');
 
-    await handleLike(slug, token, toggle);
+    handleLike(slug, token, toggle);
   };
 
   handlePageChange = pageNumber => {
-    const { pageSize, pageChange, handleGetAllArticles, username } = this.props;
+    const { pageSize, pageChange, handleGetAllArticles, token } = this.props;
     pageChange({ pageNumber });
-    handleGetAllArticles(pageSize, pageNumber, username);
+    handleGetAllArticles(pageSize, pageNumber, token);
   };
 
   render() {
@@ -71,7 +89,7 @@ class PostList extends React.Component {
       ({ title, slug, author, description, createdAt, tagList, favoritesCount, favorited }) => {
         const { username, image } = author;
         return (
-          <div key={slug} className="col-md-6 col-lg-6 col-sm-6 col-xs-12 mb-4">
+          <div key={slug} className="col-md-4 col-lg-4 col-sm-6 col-xs-12 mb-4">
             <div className="card h-100 shadow p-3 mb-5 bg-white rounded">
               <img src={image} className="card-img-top" alt="Карточка" />
               <h6 className="card-header">Создана: {getDate(createdAt)} назад</h6>
@@ -136,7 +154,7 @@ class PostList extends React.Component {
   }
 }
 
-export default PostList;
+export default connect(mapStateToProps, actionCreators)(PostList);
 
 PostList.defaultProps = {
   token: null,
@@ -144,7 +162,6 @@ PostList.defaultProps = {
   pageSize: 10,
   pageChange: () => {},
   handleGetAllArticles: () => {},
-  username: null,
   currentPage: 1,
   articles: {},
   handlePostSelected: () => {},
@@ -157,7 +174,6 @@ PostList.propTypes = {
   pageSize: PropTypes.number,
   pageChange: PropTypes.func,
   handleGetAllArticles: PropTypes.func,
-  username: PropTypes.string,
   currentPage: PropTypes.number,
   articles: PropTypes.PropTypes.exact({
     bySlug: PropTypes.object,

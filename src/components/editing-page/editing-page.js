@@ -1,6 +1,7 @@
 import React from 'react';
 import { Formik, Field, Form, ErrorMessage, FieldArray } from 'formik';
 import { connect } from 'react-redux';
+import { withRouter } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import * as Yup from 'yup';
 import ErrorCustom from '../error-custom';
@@ -11,20 +12,17 @@ import './editing-page.scss';
 const validationSchema = Yup.object().shape({
   title: Yup.string()
     .min(3, 'Название не меньше 3 символов')
-    .max(50, 'Название не более 50 символов')
-    .required('Обязательное поле'),
+    .max(50, 'Название не более 50 символов'),
   description: Yup.string()
     .min(10, 'Краткое описание не меньше 10 символов')
-    .max(150, 'Краткое описание не более 150 символов')
-    .required('Обязательное поле'),
-  body: Yup.string()
-    .min(10, 'Содержимое статьи не меньше 10 символов')
-    .required('Обязательное поле'),
+    .max(150, 'Краткое описание не более 150 символов'),
+  body: Yup.string().min(10, 'Содержимое статьи не меньше 10 символов'),
   tagList: Yup.array().of(Yup.string().min(3, 'Не менее 3 символов')),
 });
 
-const mapStateToProps = ({ user, articlesUiState }) => {
+const mapStateToProps = ({ user, articlesUiState, articles }) => {
   return {
+    articles,
     token: user.userData.token,
     username: user.userData.username,
     isAuthorized: user.isAuthorized,
@@ -49,11 +47,15 @@ class EditingPage extends React.Component {
         ...data,
       },
     };
-    handleArticleEdit(JSON.stringify(newData), token, resetForm, postId);
+    handleArticleEdit(newData, token, postId).then(() => {
+      resetForm();
+      const { history } = this.props;
+      history.push(`/articles/${postId}/`);
+    });
   };
 
   render() {
-    const { postId } = this.props;
+    const { postId, articles } = this.props;
     if (!postId) {
       return (
         <div className="container-wrapp">
@@ -62,6 +64,8 @@ class EditingPage extends React.Component {
       );
     }
 
+    const articleEdit = articles.bySlug[postId];
+    const { title, description, body, tagList } = articleEdit;
     const { username, isAuthorized, isEditSuccessful } = this.props;
     const successfulMessage =
       isEditSuccessful === true ? (
@@ -75,7 +79,7 @@ class EditingPage extends React.Component {
       ) : null;
     const formik = (
       <Formik
-        initialValues={{ title: '', description: '', body: '', tagList: [] }}
+        initialValues={{ title, description, body, tagList }}
         validationSchema={validationSchema}
         onSubmit={(values, { setSubmitting, resetForm }) => {
           setSubmitting(false);
@@ -102,10 +106,12 @@ class EditingPage extends React.Component {
           <ErrorMessage name="body" component={ErrorCustom} />
           <FieldArray name="tagList">
             {({ push, form: { values } }) => {
+              // eslint-disable-next-line no-shadow
               const renderTagList = tagList => {
                 return tagList.map((tag, index) => {
                   return (
-                    <React.Fragment key={`id_${tag}`}>
+                    // eslint-disable-next-line react/no-array-index-key
+                    <React.Fragment key={`id_${index}`}>
                       <Field
                         className="form__input"
                         name={`tagList.${index}`}
@@ -162,7 +168,7 @@ class EditingPage extends React.Component {
   }
 }
 
-export default connect(mapStateToProps, actionCreators)(EditingPage);
+export default connect(mapStateToProps, actionCreators)(withRouter(EditingPage));
 
 EditingPage.defaultProps = {
   postId: null,
@@ -171,6 +177,8 @@ EditingPage.defaultProps = {
   username: null,
   isAuthorized: null,
   isEditSuccessful: null,
+  articles: {},
+  history: {},
 };
 
 EditingPage.propTypes = {
@@ -180,4 +188,14 @@ EditingPage.propTypes = {
   username: PropTypes.string,
   isAuthorized: PropTypes.bool,
   isEditSuccessful: PropTypes.bool,
+  articles: PropTypes.PropTypes.exact({
+    bySlug: PropTypes.object,
+    allSlugs: PropTypes.array,
+  }),
+  history: PropTypes.oneOfType([
+    PropTypes.string,
+    PropTypes.number,
+    PropTypes.func,
+    PropTypes.object,
+  ]),
 };

@@ -2,6 +2,7 @@ import React from 'react';
 import './add-article-page.scss';
 import { Formik, Field, Form, ErrorMessage, FieldArray } from 'formik';
 import { connect } from 'react-redux';
+import { withRouter } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import * as Yup from 'yup';
 import ErrorCustom from '../error-custom';
@@ -52,7 +53,10 @@ class AddArticlePage extends React.Component {
       },
     };
 
-    addArticle(JSON.stringify(newData), token, resetForm);
+    addArticle(newData, token, resetForm).then(postId => {
+      const { history } = this.props;
+      history.push(`/articles/${postId}/`);
+    });
   }
 
   render() {
@@ -97,7 +101,8 @@ class AddArticlePage extends React.Component {
               const renderTagList = tagList => {
                 return tagList.map((tag, index) => {
                   return (
-                    <React.Fragment key={`id_${tag}`}>
+                    // eslint-disable-next-line react/no-array-index-key
+                    <React.Fragment key={`id_${index}`}>
                       <Field
                         className="form__input"
                         name={`tagList.${index}`}
@@ -153,7 +158,7 @@ class AddArticlePage extends React.Component {
   }
 }
 
-export default connect(mapStateToProps, actionCreators)(AddArticlePage);
+export default connect(mapStateToProps, actionCreators)(withRouter(AddArticlePage));
 
 AddArticlePage.defaultProps = {
   username: '',
@@ -161,6 +166,7 @@ AddArticlePage.defaultProps = {
   token: '',
   isAuthorized: null,
   isSuccessful: null,
+  history: {},
 };
 
 AddArticlePage.propTypes = {
@@ -169,4 +175,10 @@ AddArticlePage.propTypes = {
   token: PropTypes.string,
   isAuthorized: PropTypes.bool,
   isSuccessful: PropTypes.bool,
+  history: PropTypes.oneOfType([
+    PropTypes.string,
+    PropTypes.number,
+    PropTypes.func,
+    PropTypes.object,
+  ]),
 };

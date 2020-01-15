@@ -3,6 +3,17 @@ import { handleActions } from 'redux-actions';
 import * as actions from '../actions';
 
 const initialState =  { bySlug: {}, allSlugs:[] };
+const initialUserState = {
+  isSuccessful: null,
+  isAuthorized: null,
+  error: null,
+  userData: {
+    id: '',
+    email: '',
+    username: '',
+    token: '',
+  },
+}
 
 const user = handleActions(
   {
@@ -33,17 +44,7 @@ const user = handleActions(
       };
     },
   },
-  {
-    isSuccessful: null,
-    isAuthorized: null,
-    error: null,
-    userData: {
-      id: '',
-      email: '',
-      username: '',
-      token: '',
-    },
-  }
+  initialUserState
 );
 
 const articles = handleActions({
@@ -60,15 +61,15 @@ const articles = handleActions({
               };
     }, state);
   },
-  [actions.favoriteArticlesAdd](state, { payload: { favoritedArticlesKeys } }) {
-    return {
-      ...state,
-    };
-    
-  },
-  [actions.articleAdd](state) {
+  [actions.articleAdd](state, { payload: { article } } ) {
         return {
-          ...state
+          ...state,
+          bySlug: {
+            [article.slug] : article,
+            ...state.bySlug,
+           
+          },
+          allSlugs: [article.slug, ...state.allSlugs],
         };
   },
   [actions.articleEdit](state, { payload: { article, slug } }) {
